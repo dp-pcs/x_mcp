@@ -124,6 +124,7 @@ mcp = FastMCP(
     port=int(os.environ.get("PORT", "8000")),
     streamable_http_path="/mcp",
     json_response=True,
+    stateless_http=True,
 )
 
 
