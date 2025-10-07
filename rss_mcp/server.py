@@ -30,6 +30,12 @@ class FeedItem(BaseModel):
     is_reply: bool = Field(default=False, description="Best-effort flag indicating replies")
 
 
+class FeedItemsResponse(BaseModel):
+    """Container for returning multiple feed items in a single payload."""
+
+    result: List[FeedItem]
+
+
 @dataclass(slots=True)
 class ParsedEntry:
     """Internal container for feed data before validation."""
@@ -123,8 +129,6 @@ mcp = FastMCP(
     host=os.environ.get("HOST", "0.0.0.0"),
     port=int(os.environ.get("PORT", "8000")),
     streamable_http_path="/mcp",
-    json_response=True,
-    stateless_http=True,
 )
 
 
@@ -133,7 +137,7 @@ async def fetch_posts(
     limit: int = 10,
     include_replies: bool = True,
     ctx: Context[ServerSession, None] | None = None,
-) -> List[FeedItem]:
+) -> FeedItemsResponse:
     """Return the latest posts from the RSS feed."""
 
     limit = max(1, min(limit, 50))
@@ -149,7 +153,7 @@ async def fetch_posts(
     if not include_replies:
         items = [item for item in items if not item.is_reply]
 
-    return items
+    return FeedItemsResponse(result=items)
 
 
 def main() -> None:
